@@ -644,11 +644,18 @@ Zone.patchRegisterElement = function () {
     'detachedCallback',
     'attributeChangedCallback'
   ];
+  var getPropertyDescriptor = function(obj, prop) {
+    var descriptor;
+    while (obj && !(descriptor = Object.getOwnPropertyDescriptor(obj, prop))) {
+      obj = obj.__proto__;
+    }
+    return descriptor;
+  };
   document.registerElement = function (name, opts) {
     callbacks.forEach(function (callback) {
       if (opts.prototype[callback]) {
-        var descriptor = Object.getOwnPropertyDescriptor(opts.prototype, callback);
-        if (descriptor.value) {
+        var descriptor = getPropertyDescriptor(opts.prototype, callback);
+        if (descriptor && descriptor.value) {
           descriptor.value = zone.bind(descriptor.value || opts.prototype[callback]);
           Zone._redefineProperty(opts.prototype, callback, descriptor);
         }
